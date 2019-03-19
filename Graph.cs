@@ -19,10 +19,17 @@ public class Graph : MonoBehaviour {
         return position;
     }
 
+    Vector3 SineFunction(Vector3 position, float time, float c1, float c2) {
+        position.y = Mathf.Sin(Mathf.PI * (position.x + Time.time) * c1) * c2;
+
+        return position;
+    }
+
     public Transform pointPrefab;
     [Range(10, 500)] public int resolution = 10;
     [Range(-20, 20)] public float c1 = 0;
     [Range(-20, 20)] public float c2 = 0;
+    [Range(0, 1)] public int activeFunction;
     Point[] points;
 
     void Awake() {
@@ -49,11 +56,17 @@ public class Graph : MonoBehaviour {
 
     void Update() {
 
+        float time = Time.time;
+
         for (int i = 0; i < resolution; ++i) {
             Transform point = points[i].point;
             Vector3 position = point.localPosition;
-            //position.y = Mathf.Sin(Mathf.PI * (position.x + Time.time));
-            point.localPosition = SpiralDiffEq(position, points[i].time, c1, c2);
+            if (activeFunction == 0) {
+                position.x = ((i + 0.5f) * (2f / resolution) * 5f) - 5f;
+                point.localPosition = SineFunction(position, time, c1, c2);
+            } else {
+                point.localPosition = SpiralDiffEq(position, points[i].time, c1, c2);
+            }
             points[i].point = point;
             points[i].time += 0.02f;
             if (points[i].time > 10) {
