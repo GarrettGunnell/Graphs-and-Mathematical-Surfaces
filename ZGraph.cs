@@ -1,15 +1,9 @@
 ﻿using UnityEngine;
 
 
-public class Point {
-    public Transform point;
-    public float time;
+public delegate Vector3 ZGraphFunction(Vector3 position, int resolution, float time, float c1, float c2, int i);
 
-}
-
-public delegate Vector3 GraphFunction(Vector3 position, int resolution, float time, float c1, float c2, int i);
-
-public enum GraphFunctionName {
+public enum ZGraphFunctionName {
     SpiralDiffEq,
     SineFunction,
     DoubleSineFunction,
@@ -19,36 +13,35 @@ public enum GraphFunctionName {
     TanSineFunction
 }
 
-public class Graph : MonoBehaviour {
+public class ZGraph : MonoBehaviour {
 
     public Transform pointPrefab;
     [Range(10, 500)] public int resolution = 10;
     [Range(-20, 20)] public float c1 = 0;
     [Range(-20, 20)] public float c2 = 0;
-    public GraphFunctionName activeFunction;
+    public ZGraphFunctionName activeFunction;
     Point[] points;
-    static GraphFunction[] functions = {
+    static ZGraphFunction[] functions = {
         SpiralDiffEq, SineFunction, DoubleSineFunction, SineTimes2Function, WildinSineFunction, TanFunction, TanSineFunction
     };
-    
+
 
     void Start() {
         float time = 0f;
-        //points = new Point[resolution * resolution];
-        points = new Point[resolution];
+        points = new Point[resolution * resolution];
         float step = (2f / resolution) * 5f;
         Vector3 scale = Vector3.one * step;
         Vector3 position;
         position.y = 0f;
         position.z = 0f;
-        for (int i = 0, x = 0, z = 0; i < points.Length; ++i, ++x) {
-            if (x == resolution) {
+        for(int i = 0, x = 0, z = 0; i < points.Length; ++i, ++x) {
+            if(x == resolution) {
                 x = 0;
                 z += 1;
             }
             Transform point = Instantiate(pointPrefab);
             position.x = ((i + 0.5f) * step) - 5f;
-            //position.z = ((z + 0.5f) * step) - 5f;
+            position.z = ((z + 0.5f) * step) - 5f;
             point.localPosition = position;
             point.localScale = scale;
             point.SetParent(transform, false);
@@ -63,22 +56,23 @@ public class Graph : MonoBehaviour {
     void Update() {
 
         float time = Time.time;
-        GraphFunction f = functions[(int)activeFunction];
+        ZGraphFunction f = functions[(int)activeFunction];
 
-        for (int i = 0, x = 0; i < points.Length; ++i, ++x) {
-            if (x == resolution) {
+        for(int i = 0, x = 0; i < points.Length; ++i, ++x) {
+            if(x == resolution) {
                 x = 0;
             }
             Transform point = points[i].point;
             Vector3 position = point.localPosition;
-            if (activeFunction == 0) {
+            if(activeFunction == 0) {
                 point.localPosition = f(position, resolution, points[i].time, c1, c2, x);
-            } else {
+            }
+            else {
                 point.localPosition = f(position, resolution, time, c1, c2, x);
             }
             points[i].point = point;
             points[i].time += 0.02f;
-            if (points[i].time > 10) {
+            if(points[i].time > 10) {
                 points[i].time = 0;
             }
         }
